@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
+patient-management.log
