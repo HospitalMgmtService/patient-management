@@ -49,17 +49,24 @@ public class PatientController {
     @GetMapping
     public ResponseEntity<List<Patient>> getPatientByFields(
             @RequestParam(value = "all", required = false) String allPatients,
-            @RequestParam(value = "id", required = false) Long patientId
+            @RequestParam(value = "id", required = false) Long patientId,
+            @RequestParam(value = "name", required = false) String patientName
     ) {
         if (patientId != null) {
-            log.info("PatientController >> getPatientByFields >> Patient with Id: {}.", patientId);
+            log.info("PatientController >> getPatientByFields >> Patient with Id: {}", patientId);
             Optional<List<Patient>> patient = patientService.getPatientById(patientId);
             if (patient.isPresent()) {
                 return ResponseEntity.ok(patient.get());
             } else {
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } else if (patientName != null) {
+            log.info("PatientController >> getPatientByFields >> Patient with name: {}", patientName);
+            List<Patient> patients = patientService.getPatientByName(patientName);
+            if (!patients.isEmpty()) {
+                return ResponseEntity.ok(patients);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
         } else if ("true".equalsIgnoreCase(allPatients)) {
             /*List<Patient> patients = patientService.getAllPatients();

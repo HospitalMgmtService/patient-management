@@ -1,6 +1,7 @@
 package com.pnk.patient_management.service;
 
 import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.exception.BadRequestException;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
 import com.pnk.patient_management.model.Patient;
 import com.pnk.patient_management.repository.PatientRepository;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -77,10 +79,51 @@ class PatientServiceImplTest {
 
 
     @Test
+    void testGetPatientById_BadRequest() {
+        when(mockPatientRepository.findById(-99L))
+                .thenThrow(BadRequestException.class);
+
+        assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientById(-99L));
+        assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientById(null));
+    }
+
+
+    @Test
     void testGetPatientById_NotFound() {
         when(mockPatientRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> mockPatientServiceImpl.getPatientById(99L));
+    }
+
+
+    @Test
+    void testGetPatientByName() {
+        when(mockPatientRepository.findByNameContains(patient1.getName()))
+                .thenReturn(Collections.singletonList(patient1));
+
+        List<Patient> result = mockPatientServiceImpl.getPatientByName(patient1.getName());
+        assertEquals(1, result.size());
+        assertEquals(patient1, result.get(0));
+    }
+
+
+    @Test
+    void testGetPatientByName_BadRequest() {
+        String nonExistingName = "";
+        when(mockPatientRepository.findByNameContains(nonExistingName))
+                .thenReturn(Collections.emptyList());
+
+        assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientByName(nonExistingName));
+    }
+
+
+    @Test
+    void testGetPatientByName_NotFound() {
+        String nonExistingName = "dne";
+        when(mockPatientRepository.findByNameContains(nonExistingName))
+                .thenReturn(Collections.emptyList());
+
+        assertThrows(ResourceNotFoundException.class, () -> mockPatientServiceImpl.getPatientByName(nonExistingName));
     }
 }

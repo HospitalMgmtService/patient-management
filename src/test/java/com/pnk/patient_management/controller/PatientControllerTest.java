@@ -2,6 +2,7 @@ package com.pnk.patient_management.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.exception.BadRequestException;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
 import com.pnk.patient_management.exception.UnsupportedMediaType;
 import com.pnk.patient_management.model.Patient;
@@ -145,6 +146,55 @@ public class PatientControllerTest {
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(ENDPOINT_PATH).param("id", "99"))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+
+    @Test
+    void testGetPatientByName_Ok() throws Exception {
+        when(mockPatientService.getPatientByName(patient1.getName()))
+                .thenReturn(Collections.singletonList(patient1));
+
+        mockMvc.perform(get(ENDPOINT_PATH).param("name", patient1.getName()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(mockObjectMapper.writeValueAsString(Collections.singletonList(patient1))))
+                .andDo(print());
+
+        verify(mockPatientService, times(1)).getPatientByName(patient1.getName());
+    }
+
+
+    @Test
+    void testGetPatientByName_PatientNotFound() throws Exception {
+        String notFoundName = "NotFound";
+        when(mockPatientService.getPatientByName(notFoundName))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get(ENDPOINT_PATH)
+                        .param("name", notFoundName)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    void testGetPatientByName_Null_patientName() throws Exception {
+        when(mockPatientService.getPatientByName(""))
+                .thenThrow(BadRequestException.class);
+
+        mockMvc.perform(get(ENDPOINT_PATH).param("name", ""))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+
+    @Test
+    void testGetPatientByName_ResourceNotFoundException() throws Exception {
+        when(mockPatientService.getPatientByName("NoName"))
+                .thenThrow(ResourceNotFoundException.class);
+
+        mockMvc.perform(get(ENDPOINT_PATH).param("name", "NoName"))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }
