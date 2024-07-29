@@ -1,4 +1,4 @@
-package com.pnk.patient_management.dto;
+package com.pnk.patient_management.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,7 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Setter
 @Getter
-public class PatientDTO {
+public class PatientDTOCreationRequest {
 
     private String name;
 

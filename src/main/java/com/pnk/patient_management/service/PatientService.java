@@ -1,6 +1,6 @@
 package com.pnk.patient_management.service;
 
-import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.dto.request.PatientDTOCreationRequest;
 import com.pnk.patient_management.model.Patient;
 
 import java.util.List;
@@ -11,7 +11,7 @@ public interface PatientService {
 
     // Register Patients:
     // Assign a unique patient ID for tracking.
-    Patient registerPatient(PatientDTO patientDTO);
+    Patient registerPatient(PatientDTOCreationRequest patientDTOCreationRequest);
 
     // Collect and store patient personal information, including name, address, contact details, date of birth, etc.
     Optional<List<Patient>> getPatientById(Long patientId);

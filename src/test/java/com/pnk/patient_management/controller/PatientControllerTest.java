@@ -1,7 +1,7 @@
 package com.pnk.patient_management.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.dto.request.PatientDTOCreationRequest;
 import com.pnk.patient_management.exception.BadRequestException;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
 import com.pnk.patient_management.exception.UnsupportedMediaType;
@@ -45,7 +45,7 @@ public class PatientControllerTest {
     ModelMapper modelMapper = new ModelMapper();
 
     Patient patient1;
-    PatientDTO patientDTO1;
+    PatientDTOCreationRequest patientDTOCreationRequest1;
 
     @BeforeEach
     public void setUp() {
@@ -53,15 +53,15 @@ public class PatientControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(mockPatientController).build();
         mockObjectMapper = new ObjectMapper();
         patient1 = new Patient(1L, "John", new Date(1999, 7, 28), "123 A St");
-        patientDTO1 = modelMapper.map(patient1, PatientDTO.class);
+        patientDTOCreationRequest1 = modelMapper.map(patient1, PatientDTOCreationRequest.class);
     }
 
 
     @Test
     public void testCreatePatientSuccess() throws Exception {
-        String requestBody = mockObjectMapper.writeValueAsString(patientDTO1);
+        String requestBody = mockObjectMapper.writeValueAsString(patientDTOCreationRequest1);
 
-        when(mockPatientService.registerPatient(patientDTO1))
+        when(mockPatientService.registerPatient(patientDTOCreationRequest1))
                 .thenReturn(patient1);
 
         mockMvc.perform(post(ENDPOINT_PATH)
@@ -77,9 +77,9 @@ public class PatientControllerTest {
 
     @Test
     public void testCreatePatientIllegalArgument() throws Exception {
-        String requestBody = mockObjectMapper.writeValueAsString(patientDTO1);
+        String requestBody = mockObjectMapper.writeValueAsString(patientDTOCreationRequest1);
 
-        when(mockPatientService.registerPatient(patientDTO1))
+        when(mockPatientService.registerPatient(patientDTOCreationRequest1))
                 .thenThrow(new IllegalArgumentException());
 
         mockMvc.perform(post(ENDPOINT_PATH)
@@ -92,9 +92,9 @@ public class PatientControllerTest {
 
     @Test
     public void testCreatePatientUnsupportedMediaType() throws Exception {
-        String requestBody = mockObjectMapper.writeValueAsString(patientDTO1);
+        String requestBody = mockObjectMapper.writeValueAsString(patientDTOCreationRequest1);
 
-        when(mockPatientService.registerPatient(any(PatientDTO.class)))
+        when(mockPatientService.registerPatient(any(PatientDTOCreationRequest.class)))
                 .thenThrow(new UnsupportedMediaType(""));
 
         mockMvc.perform(post(ENDPOINT_PATH)

@@ -1,6 +1,6 @@
 package com.pnk.patient_management.service;
 
-import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.dto.request.PatientDTOCreationRequest;
 import com.pnk.patient_management.exception.BadRequestException;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
 import com.pnk.patient_management.model.Patient;
@@ -37,7 +37,7 @@ class PatientServiceImplTest {
     ModelMapper modelMapper = new ModelMapper();
 
     Patient patient1;
-    PatientDTO patientDTO1;
+    PatientDTOCreationRequest patientDTOCreationRequest1;
 
     @BeforeEach
     void setUp() {
@@ -54,11 +54,11 @@ class PatientServiceImplTest {
     @Test
     void testRegisterPatient() {
         // Given
-        PatientDTO patientDTO = modelMapper.map(patient1, PatientDTO.class);
+        PatientDTOCreationRequest patientDTOCreationRequest = modelMapper.map(patient1, PatientDTOCreationRequest.class);
         when(mockPatientRepository.save(any(Patient.class))).thenReturn(patient1);
 
         // When
-        Patient result = mockPatientServiceImpl.registerPatient(patientDTO);
+        Patient result = mockPatientServiceImpl.registerPatient(patientDTOCreationRequest);
 
         // Then
         assertEquals(patient1, result);

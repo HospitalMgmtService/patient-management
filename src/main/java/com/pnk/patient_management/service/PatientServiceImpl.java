@@ -1,6 +1,6 @@
 package com.pnk.patient_management.service;
 
-import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.dto.request.PatientDTOCreationRequest;
 import com.pnk.patient_management.exception.BadRequestException;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
 import com.pnk.patient_management.model.Patient;
@@ -32,18 +32,18 @@ public class PatientServiceImpl implements PatientService {
     /**
      * Registers a new patient.
      *
-     * @param patientDTO the data transfer object containing patient information
+     * @param patientDTOCreationRequest the data transfer object containing patient information
      * @return the registered Patient entity
-     * @throws IllegalArgumentException if the patientDTO is null
+     * @throws IllegalArgumentException if the patientDTOCreationRequest is null
      */
     @Override
-    public Patient registerPatient(PatientDTO patientDTO) {
-        if (Objects.isNull(patientDTO)) {
-            log.warn("PatientServiceImpl >> registerPatient >> Failed to create new patient: patientDTO is null.");
-            throw new IllegalArgumentException("Request body does not contain patientDTO");
+    public Patient registerPatient(PatientDTOCreationRequest patientDTOCreationRequest) {
+        if (Objects.isNull(patientDTOCreationRequest)) {
+            log.warn("PatientServiceImpl >> registerPatient >> Failed to create new patient: patientDTOCreationRequest is null.");
+            throw new IllegalArgumentException("Request body does not contain patientDTOCreationRequest");
         }
 
-        Patient patient = modelMapper.map(patientDTO, Patient.class);
+        Patient patient = modelMapper.map(patientDTOCreationRequest, Patient.class);
         log.info("PatientServiceImpl >> registerPatient >> Patient created successfully: {}", patient);
         return patientRepository.save(patient);
     }
