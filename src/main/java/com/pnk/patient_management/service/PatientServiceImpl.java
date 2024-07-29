@@ -1,6 +1,7 @@
 package com.pnk.patient_management.service;
 
 import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.exception.BadRequestException;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
 import com.pnk.patient_management.model.Patient;
 import com.pnk.patient_management.repository.PatientRepository;
@@ -50,6 +51,11 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Optional<List<Patient>> getPatientById(Long patientId) {
+        if (patientId == null || patientId < 0) {
+            log.warn("PatientServiceImpl >> getPatientById >> Invalid patientId: {}", patientId);
+            throw new BadRequestException("Invalid patientId: " + patientId);
+        }
+
         Optional<Patient> retrievedPatient = patientRepository.findById(patientId);
 
         if (retrievedPatient.isPresent()) {
@@ -58,6 +64,25 @@ public class PatientServiceImpl implements PatientService {
         }
 
         log.warn("PatientServiceImpl >> getPatientById >> Patient with Id: {} is not found.", patientId);
-        throw new ResourceNotFoundException("PatientServiceImpl >> getPatientById >> Patient with Id: " + patientId + " is not found.");
+        throw new ResourceNotFoundException("Patient with Id: " + patientId + " is not found.");
+    }
+
+
+    @Override
+    public List<Patient> getPatientByName(String patientName) {
+        if (patientName == null || patientName.isEmpty() || patientName.isBlank()) {
+            log.warn("PatientServiceImpl >> getPatientByName >> Invalid patientName: {}", patientName);
+            throw new BadRequestException("Invalid patientName: " + patientName);
+        }
+
+        List<Patient> retrievedPatient = patientRepository.findByNameContains(patientName);
+
+        if (!retrievedPatient.isEmpty()) {
+            log.info("PatientServiceImpl >> getPatientByName >> Patient is found: {}", retrievedPatient);
+            return retrievedPatient;
+        }
+
+        log.warn("PatientServiceImpl >> getPatientByName >> Patient with name: {} is not found.", patientName);
+        throw new ResourceNotFoundException("Patient with name: " + patientName + " is not found.");
     }
 }

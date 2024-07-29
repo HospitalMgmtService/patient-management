@@ -16,6 +16,8 @@ public interface PatientService {
     // Collect and store patient personal information, including name, address, contact details, date of birth, etc.
     Optional<List<Patient>> getPatientById(Long patientId);
 
+    List<Patient> getPatientByName(String patientName);
+
 }
 
 
