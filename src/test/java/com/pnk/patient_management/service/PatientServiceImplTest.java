@@ -99,7 +99,7 @@ class PatientServiceImplTest {
 
     @Test
     void testGetPatientByName() {
-        when(mockPatientRepository.findByName(patient1.getName()))
+        when(mockPatientRepository.findByNameContains(patient1.getName()))
                 .thenReturn(Collections.singletonList(patient1));
 
         List<Patient> result = mockPatientServiceImpl.getPatientByName(patient1.getName());
@@ -111,7 +111,7 @@ class PatientServiceImplTest {
     @Test
     void testGetPatientByName_BadRequest() {
         String nonExistingName = "";
-        when(mockPatientRepository.findByName(nonExistingName))
+        when(mockPatientRepository.findByNameContains(nonExistingName))
                 .thenReturn(Collections.emptyList());
 
         assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientByName(nonExistingName));
@@ -121,7 +121,7 @@ class PatientServiceImplTest {
     @Test
     void testGetPatientByName_NotFound() {
         String nonExistingName = "dne";
-        when(mockPatientRepository.findByName(nonExistingName))
+        when(mockPatientRepository.findByNameContains(nonExistingName))
                 .thenReturn(Collections.emptyList());
 
         assertThrows(ResourceNotFoundException.class, () -> mockPatientServiceImpl.getPatientByName(nonExistingName));
