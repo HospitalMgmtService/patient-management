@@ -1,88 +1,104 @@
 package com.pnk.patient_management.service;
 
-import com.pnk.patient_management.dto.PatientDTO;
+import com.pnk.patient_management.dto.request.PatientCreationRequest;
+import com.pnk.patient_management.dto.response.PatientResponse;
+import com.pnk.patient_management.entity.Patient;
+import com.pnk.patient_management.exception.AppException;
 import com.pnk.patient_management.exception.BadRequestException;
+import com.pnk.patient_management.exception.ErrorCode;
 import com.pnk.patient_management.exception.ResourceNotFoundException;
-import com.pnk.patient_management.model.Patient;
 import com.pnk.patient_management.repository.PatientRepository;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
-@Slf4j
 @Service
+@RequiredArgsConstructor // injected by Constructor, no longer need of @Autowire
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class PatientServiceImpl implements PatientService {
 
-    private final PatientRepository patientRepository;
-    private final ModelMapper modelMapper = new ModelMapper();
-
-    @Autowired
-    public PatientServiceImpl(PatientRepository patientRepository) {
-        this.patientRepository = patientRepository;
-    }
+    PatientRepository patientRepository;
+    ModelMapper modelMapper = new ModelMapper();
 
 
     /**
      * Registers a new patient.
      *
-     * @param patientDTO the data transfer object containing patient information
+     * @param patientCreationRequest the data transfer object containing patient information
      * @return the registered Patient entity
-     * @throws IllegalArgumentException if the patientDTO is null
+     * @throws IllegalArgumentException if the patientCreationRequest is null
      */
     @Override
-    public Patient registerPatient(PatientDTO patientDTO) {
-        if (Objects.isNull(patientDTO)) {
-            log.warn("PatientServiceImpl >> registerPatient >> Failed to create new patient: patientDTO is null.");
-            throw new IllegalArgumentException("Request body does not contain patientDTO");
+    public PatientResponse registerPatient(PatientCreationRequest patientCreationRequest) {
+        log.info(">> registerPatient::patientCreationRequest: {}", patientCreationRequest);
+
+        if (Objects.isNull(patientCreationRequest)) {
+            log.info(">> registerPatient >> Failed to create new patient: patientCreationRequest is null.");
+            throw new IllegalArgumentException("Request body does not contain patientCreationRequest");
         }
 
-        Patient patient = modelMapper.map(patientDTO, Patient.class);
-        log.info("PatientServiceImpl >> registerPatient >> Patient created successfully: {}", patient);
-        return patientRepository.save(patient);
+        Patient patient = modelMapper.map(patientCreationRequest, Patient.class);
+        patient.setVisitList(new ArrayList<>());
+
+        log.info(">> registerPatient:: patient: {}", patient);
+
+        try {
+            patient = patientRepository.save(patient);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
+        PatientResponse patientResponse = modelMapper.map(patient, PatientResponse.class);
+        log.info(">> registerPatient::patientResponse: {}", patientResponse);
+
+        return patientResponse;
     }
 
 
     @Override
-    public Optional<List<Patient>> getPatientById(String patientId) {
+    public PatientResponse getPatientById(String patientId) {
         if (patientId == null) {
-            log.warn("PatientServiceImpl >> getPatientById >> Invalid patientId: {}", patientId);
-            throw new BadRequestException("Invalid patientId: " + patientId);
+            log.info(">> getPatientById >> Invalid patientId");
+            throw new BadRequestException("Invalid patientId");
         }
 
         Optional<Patient> retrievedPatient = patientRepository.findById(patientId);
 
         if (retrievedPatient.isPresent()) {
-            log.info("PatientServiceImpl >> getPatientById >> Patient is found: {}", retrievedPatient.get());
-            return Optional.of(Collections.singletonList(retrievedPatient.get()));
+            log.info(">> getPatientById >> Patient is found: {}", retrievedPatient.get());
+            return modelMapper.map(retrievedPatient.get(), PatientResponse.class);
         }
 
-        log.warn("PatientServiceImpl >> getPatientById >> Patient with Id: {} is not found.", patientId);
+        log.info(">> getPatientById >> Patient with Id: {} is not found.", patientId);
         throw new ResourceNotFoundException("Patient with Id: " + patientId + " is not found.");
     }
 
 
     @Override
-    public List<Patient> getPatientByName(String patientName) {
-        if (patientName == null || patientName.isEmpty() || patientName.isBlank()) {
-            log.warn("PatientServiceImpl >> getPatientByName >> Invalid patientName: {}", patientName);
-            throw new BadRequestException("Invalid patientName: " + patientName);
+    public List<PatientResponse> getPatientByName(String patientName) {
+        if (patientName == null) {
+            log.info(">> getPatientById >> Invalid patientName");
+            throw new BadRequestException("Invalid patientName");
         }
 
-        List<Patient> retrievedPatient = patientRepository.findByNameContains(patientName);
+        List<Patient> retrievedPatients = patientRepository.findByNameContains(patientName);
 
-        if (!retrievedPatient.isEmpty()) {
-            log.info("PatientServiceImpl >> getPatientByName >> Patient is found: {}", retrievedPatient);
-            return retrievedPatient;
+        if (retrievedPatients.isEmpty()) {
+            log.info(">> getPatientById >> No patients found with name: {}", patientName);
+            return Collections.emptyList();
         }
 
-        log.warn("PatientServiceImpl >> getPatientByName >> Patient with name: {} is not found.", patientName);
-        throw new ResourceNotFoundException("Patient with name: " + patientName + " is not found.");
+        List<PatientResponse> patientResponses = retrievedPatients.stream()
+                .map(patient -> modelMapper.map(patient, PatientResponse.class)).toList();
+
+        log.info(">> getPatientById >> Found {} patients with name: {}", patientResponses.size(), patientName);
+        return patientResponses;
     }
 }

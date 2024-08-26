@@ -1,9 +1,11 @@
-package com.pnk.patient_management.model;
+package com.pnk.patient_management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -14,17 +16,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "visit")
-public class Visit {
+public class Visit implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
+    String visitId;
 
     LocalDateTime visitDate;
 
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_id")
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "patientId")
+    @JsonIgnoreProperties("visitList")
     Patient patient;
 }
