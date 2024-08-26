@@ -50,8 +50,8 @@ public class PatientServiceImpl implements PatientService {
 
 
     @Override
-    public Optional<List<Patient>> getPatientById(Long patientId) {
-        if (patientId == null || patientId < 0) {
+    public Optional<List<Patient>> getPatientById(String patientId) {
+        if (patientId == null) {
             log.warn("PatientServiceImpl >> getPatientById >> Invalid patientId: {}", patientId);
             throw new BadRequestException("Invalid patientId: " + patientId);
         }

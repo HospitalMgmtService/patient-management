@@ -42,8 +42,7 @@ class PatientServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        patient1 = new Patient(1L, "John", new Date(1999, 7, 28), "123 A St");
+        patient1 = new Patient("33c41c818ceb", "John", new Date(1999, 7, 28), "123 A St", List.of());
     }
 
     @AfterEach
@@ -68,10 +67,10 @@ class PatientServiceImplTest {
 
     @Test
     void testGetPatientById() {
-        when(mockPatientRepository.findById(patient1.getPatientId()))
+        when(mockPatientRepository.findById(patient1.getId()))
                 .thenReturn(Optional.ofNullable(patient1));
 
-        Optional<List<Patient>> result = mockPatientServiceImpl.getPatientById(patient1.getPatientId());
+        Optional<List<Patient>> result = mockPatientServiceImpl.getPatientById(patient1.getId());
 
         assertEquals(1, result.get().size());
         assertTrue(result.get().contains(patient1));
@@ -80,20 +79,24 @@ class PatientServiceImplTest {
 
     @Test
     void testGetPatientById_BadRequest() {
-        when(mockPatientRepository.findById(-99L))
+        String unknownPatientId = "unknown";
+
+        when(mockPatientRepository.findById(unknownPatientId))
                 .thenThrow(BadRequestException.class);
 
-        assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientById(-99L));
+        assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientById(unknownPatientId));
         assertThrows(BadRequestException.class, () -> mockPatientServiceImpl.getPatientById(null));
     }
 
 
     @Test
     void testGetPatientById_NotFound() {
-        when(mockPatientRepository.findById(99L))
+        String unknownPatientId = "unknown";
+
+        when(mockPatientRepository.findById(unknownPatientId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> mockPatientServiceImpl.getPatientById(99L));
+        assertThrows(ResourceNotFoundException.class, () -> mockPatientServiceImpl.getPatientById(unknownPatientId));
     }
 
 

@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -14,20 +13,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity(name = "patient")
-public class Patient {
+@Entity(name = "visit")
+public class Visit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    String name;
+    LocalDateTime visitDate;
 
-    Date dob;
+    private String description;
 
-    String address;
-
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Visit> visitList;
-
+    @ManyToOne
+    @JoinColumn(name = "patient_id")
+    Patient patient;
 }

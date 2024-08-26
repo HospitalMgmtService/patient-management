@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
-public class PatientControllerTest {
+class PatientControllerTest {
 
     @Mock
     private PatientService mockPatientService;
@@ -41,7 +42,7 @@ public class PatientControllerTest {
 
     private ObjectMapper mockObjectMapper;
 
-    private static final String ENDPOINT_PATH = "/v1/hms/patient";
+    private static final String ENDPOINT_PATH = "/patient";
     ModelMapper modelMapper = new ModelMapper();
 
     Patient patient1;
@@ -52,13 +53,13 @@ public class PatientControllerTest {
         MockitoAnnotations.openMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(mockPatientController).build();
         mockObjectMapper = new ObjectMapper();
-        patient1 = new Patient(1L, "John", new Date(1999, 7, 28), "123 A St");
+        patient1 = new Patient("33c41c818ceb", "John", new Date(1999, 7, 28), "123 A St", List.of());
         patientDTO1 = modelMapper.map(patient1, PatientDTO.class);
     }
 
 
     @Test
-    public void testCreatePatientSuccess() throws Exception {
+    void testCreatePatientSuccess() throws Exception {
         String requestBody = mockObjectMapper.writeValueAsString(patientDTO1);
 
         when(mockPatientService.registerPatient(patientDTO1))
@@ -76,7 +77,7 @@ public class PatientControllerTest {
 
 
     @Test
-    public void testCreatePatientIllegalArgument() throws Exception {
+    void testCreatePatientIllegalArgument() throws Exception {
         String requestBody = mockObjectMapper.writeValueAsString(patientDTO1);
 
         when(mockPatientService.registerPatient(patientDTO1))
@@ -91,7 +92,7 @@ public class PatientControllerTest {
 
 
     @Test
-    public void testCreatePatientUnsupportedMediaType() throws Exception {
+    void testCreatePatientUnsupportedMediaType() throws Exception {
         String requestBody = mockObjectMapper.writeValueAsString(patientDTO1);
 
         when(mockPatientService.registerPatient(any(PatientDTO.class)))
@@ -107,26 +108,26 @@ public class PatientControllerTest {
 
     @Test
     void testGetPatientById_Ok() throws Exception {
-        when(mockPatientService.getPatientById(patient1.getPatientId()))
+        when(mockPatientService.getPatientById(patient1.getId()))
                 .thenReturn(Optional.of(Collections.singletonList(patient1)));
 
-        mockMvc.perform(get(ENDPOINT_PATH).param("id", Long.toString(patient1.getPatientId())))
+        mockMvc.perform(get(ENDPOINT_PATH).param("id", patient1.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(mockObjectMapper.writeValueAsString(Collections.singletonList(patient1))))
                 .andDo(print());
 
-        verify(mockPatientService, times(1)).getPatientById(patient1.getPatientId());
+        verify(mockPatientService, times(1)).getPatientById(patient1.getId());
     }
 
 
     @Test
     void testGetPatientById_PatientNotFound() throws Exception {
-        Long patientId = 1L;
+        String patientId = "unknown";
         when(mockPatientService.getPatientById(patientId))
                 .thenReturn(Optional.empty());
 
         mockMvc.perform(get(ENDPOINT_PATH)
-                        .param("id", patientId.toString())
+                        .param("id", patientId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -142,7 +143,7 @@ public class PatientControllerTest {
 
     @Test
     void testGetPatientById_ResourceNotFoundException() throws Exception {
-        when(mockPatientService.getPatientById(99L))
+        when(mockPatientService.getPatientById("unknown"))
                 .thenThrow(ResourceNotFoundException.class);
 
         mockMvc.perform(get(ENDPOINT_PATH).param("id", "99"))
