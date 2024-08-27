@@ -1,7 +1,7 @@
 package com.pnk.patient_management.service;
 
-import com.pnk.patient_management.dto.PatientDTO;
-import com.pnk.patient_management.model.Patient;
+import com.pnk.patient_management.dto.request.PatientCreationRequest;
+import com.pnk.patient_management.dto.response.PatientResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,10 +11,12 @@ public interface PatientService {
 
     // Register Patients:
     // Assign a unique patient ID for tracking.
-    Patient registerPatient(PatientDTO patientDTO);
+    PatientResponse registerPatient(PatientCreationRequest patientCreationRequest);
 
     // Collect and store patient personal information, including name, address, contact details, date of birth, etc.
-    Optional<List<Patient>> getPatientById(Long patientId);
+    PatientResponse getPatientById(String patientId);
+
+    List<PatientResponse> getPatientByName(String patientName);
 
 }
 
